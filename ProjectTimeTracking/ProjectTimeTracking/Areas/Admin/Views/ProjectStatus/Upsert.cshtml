@@ -1,0 +1,55 @@
+﻿
+@model ProjectStatus
+@{
+    ViewData["Title"] = string.Concat((Model.Id == 0 ? "New" : "Edit"), " Project Status");
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<br />
+<div class="card card-shadow">
+    <div class="card-header">
+        <h2 class="text-info text-center">@(Model.Id == 0 ? "New" : "Edit") Project Status</h2>
+    </div>
+    <form method="post">
+        <div class="card-body">
+            @if (Model.Id != 0)
+            {
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="IsActive" />
+            }
+            <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+            <br />
+            <div class="col-4 offset-4">
+                <div class="form-group">
+                    <label asp-for="Name"></label>
+                    <span asp-validation-for="Name" class="text-danger" style="float:right;"></span>
+                    <input asp-for="Name" class="form-control" />
+                </div>
+            </div>
+            <div class="col-4 offset-4">
+                <div class="form-group">
+                    <label asp-for="Description"></label>
+                    <textarea asp-for="Description" class="form-control" style="height:70px;"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <partial name="_SaveAndBackButtons" />
+        </div>
+    </form>
+</div>
+@section Scripts{
+    @* for client side validations *@
+    <partial name="_ValidationScriptsPartial" />
+    <script type="text/javascript">
+        // set focus on the first visible input
+        $('form').find('input[type=text]').filter(':input:visible:first').focus();
+
+        $(document).ready(function ()
+        {
+            if ('@TempData["message"]' == 'exists') {
+                toastr.warning('Project Status already exists');
+            }
+        });
+    </script>
+}

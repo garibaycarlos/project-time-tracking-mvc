@@ -1,0 +1,48 @@
+﻿@model IEnumerable<Resource>
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<br />
+<div class="container row p-0 m-0">
+    <div class="col-9">
+        <h2 class="text-info">Resources</h2>
+    </div>
+    <div class="col-3">
+        <partial name="_AddNewButtonPartial" />
+    </div>
+    <div class="col-12 border p-3 backgroundWhite">
+        <table id="DT_load" class="table table-striped table-bordered" style="width:100%;">
+            <thead>
+                <tr>
+                    <th>@Html.DisplayNameFor(m => m.FirstName)</th>
+                    <th>@Html.DisplayNameFor(m => m.LastName)</th>
+                    <th>@Html.DisplayNameFor(m => m.Email)</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+@section Scripts{
+    <script src="~/js/resource.js"></script>
+    <script src="~/js/change-catalog-status.js"></script>
+    <script src="~/js/delete-catalog.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function ()
+        {
+            switch ('@TempData["message"]')
+            {
+                case 'added':
+                    toastr.success('Resource has been added');
+                    break;
+                case 'edited':
+                    toastr.success('Resource has been updated');
+                    break;
+            }
+        });
+    </script>
+}

@@ -1,0 +1,188 @@
+﻿
+@model ProjectTimeTracking.Models.ViewModels.ProjectTrackerViewModel
+@using ProjectTimeTracking.Extensions
+
+@{
+    ViewData["Title"] = "New Project";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    string commonTextField = "Name";
+    string commonValueField = "Id";
+    string resourceTextField = "FullName";
+}
+
+<br />
+<div class="card card-shadow">
+    <div class="card-header">
+        <h2 class="text-info text-center">New Project</h2>
+    </div>
+    <form method="post">
+        <div class="card-body">
+            @if (Model.ProjectTracker.Id != 0)
+            {
+                <input type="hidden" asp-for="ProjectTracker.Id" />
+            }
+            <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+            <br />
+            <div class="col-4 offset-4">
+                <div class="form-group">
+                    <label asp-for="ProjectTracker.CategoryId"></label>
+                    <select id="ddlCategoryList" asp-for="ProjectTracker.CategoryId" asp-items="Model.CategoryList.ToSelectListItem(commonTextField,commonValueField, Model.ProjectTracker.CategoryId)" class="form-control"></select>
+                </div>
+            </div>
+            <div class="col-4 offset-4">
+                <div class="form-group">
+                    <label asp-for="ProjectTracker.CustomerId"></label>
+                    <span asp-validation-for="ProjectTracker.Customer.Name" class="text-danger" style="float:right;"></span>
+                    <input asp-for="ProjectTracker.Customer.Name" id="txtSearchCustomer" type="text" class="form-control" />
+                    <input id="hdnCustomerId" type="hidden" asp-for="ProjectTracker.CustomerId" />
+                </div>
+            </div>
+            <div class="col-4 offset-4">
+                <div class="form-group">
+                    <label asp-for="ProjectTracker.ResourceId"></label>
+                    <select id="ddlResourceList" asp-for="ProjectTracker.ResourceId" asp-items="Model.ResourceList.ToSelectListItem(resourceTextField,commonValueField, Model.ProjectTracker.ResourceId)" class="form-control"></select>
+                </div>
+            </div>
+            <div class="col-4 offset-4">
+                <div class="form-group">
+                    <label asp-for="ProjectTracker.ProjectStatusId"></label>
+                    <select id="ddlProjectStatusList" asp-for="ProjectTracker.ProjectStatusId" asp-items="Model.ProjectStatusList.ToSelectListItem(commonTextField,commonValueField, Model.ProjectTracker.ProjectStatusId)" class="form-control"></select>
+                </div>
+            </div>
+            <div class="col-4 offset-4">
+                <div class="form-group">
+                    <label asp-for="ProjectTracker.Initiator"></label>
+                    <input asp-for="ProjectTracker.Initiator" class="form-control" />
+                </div>
+            </div>
+            <div class="col-4 offset-4">
+                <div class="form-group">
+                    <label asp-for="ProjectTracker.Description"></label>
+                    <textarea asp-for="ProjectTracker.Description" class="form-control" style="height:70px;"></textarea>
+                </div>
+            </div>
+            <div class="col-4 offset-4">
+                <div class="form-group">
+                    <label asp-for="ProjectTracker.CreationDate"></label>
+                    &nbsp;
+                    <label class="offset-2" asp-for="ProjectTracker.StartDate"></label>
+                    <div class="input-group">
+                        <input asp-for="ProjectTracker.CreationDate" type="text" class="form-control calendar" />
+                        <div class="input-group-append">
+                            <i class="input-group-text far fa-calendar-alt"></i>
+                        </div>
+                        <input asp-for="ProjectTracker.StartDate" type="text" class="form-control calendar" />
+                        <div class="input-group-append">
+                            <i class="input-group-text far fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4 offset-4">
+                <div class="form-group">
+                    <label asp-for="ProjectTracker.CompletionDate"></label>
+                    &nbsp;
+                    &nbsp;
+                    <label class="offset-1" asp-for="ProjectTracker.Hours"></label>
+                    <div class="input-group">
+                        <input asp-for="ProjectTracker.CompletionDate" type="text" class="form-control calendar" />
+                        <div class="input-group-append">
+                            <i class="input-group-text far fa-calendar-alt"></i>
+                        </div>
+                        <input asp-for="ProjectTracker.Hours" type="number" class="form-control numeric" style="width:63px;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <partial name="_SaveAndBackButtons" />
+        </div>
+    </form>
+</div>
+
+@section Scripts{
+    @* for client side validations *@
+    <partial name="_ValidationScriptsPartial" />
+    <script type="text/javascript">
+        $(document).ready(function ()
+        {
+            if ('@TempData["message"]' == 'exists')
+            {
+                toastr.warning('Project already exists');
+            }
+
+            // set focus on the first visible input
+            $('form').find('input[type=text]').filter(':input:visible:first').focus();
+
+            // regex to allow numbers only
+            $('.numeric').on('input', function ()
+            {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+
+            $('.calendar').datepicker({
+                showAnim: 'clip'
+            });
+
+            // trigger datepicker for the closest input to the i tag clicked
+            $('.fa-calendar-alt').click(function ()
+            {
+                $(this).parent().prev('input').datepicker('show');
+            });
+
+            // set autocomplete for the customer text box
+            $("#txtSearchCustomer").autocomplete({
+                source: function (request, response)
+                {
+                    $.ajax({
+                        url: '/User/Home/SearchCustomer',
+                        type: 'GET',
+                        cache: false,
+                        data: request,
+                        dataType: 'json',
+                        success: function (data)
+                        {
+                            response($.map(data, function (item)
+                            {
+                                return {
+                                    label: item.name,
+                                    value: item.id
+                                }
+                            }))
+                        }
+                    });
+                },
+                open: function () // highlight matching text
+                {
+                    var acData = $(this).data('ui-autocomplete');
+
+                    acData.menu.element.find('li').each(function ()
+                    {
+                        var me = $(this);
+                        var keywords = acData.term.split(' ').join('|');
+
+                        let textWrapper = me.find('.ui-menu-item-wrapper');
+                        let text = textWrapper.text();
+                        let newTextHtml = text.replace(new RegExp("(" + keywords + ")", "gi"), '<b>$1</b>');
+
+                        textWrapper.html(newTextHtml);
+                    });
+                },
+                minLength: 2,
+                select: function (event, ui) // set the selected value
+                {
+                    // set the customer id value
+                    $('#hdnCustomerId').val(ui.item.value);
+
+                    // copy the selected item from the list to the customer text box
+                    $(this).val(ui.item.label);
+
+                    return false;
+                }
+            });
+        });
+    </script>
+}
